@@ -147,39 +147,76 @@ Opd * TimesNode::flatten(Procedure * proc){
 }
 
 Opd * DivideNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* left = myExp1->flatten(proc);
+	Opd* right =  myExp2->flatten(proc);
+	Opd* dest = proc->makeTmp(QUADWORD);
+	Quad* q = new BinOpQuad(dest, DIV64, left, right);
+	proc->addQuad(q);
+	return dest;
 }
 
 Opd * AndNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, AND8, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * OrNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, OR8, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * EqualsNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, EQ64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * NotEqualsNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, NEQ8, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * LessNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, LT64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * GreaterNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, GT64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * LessEqNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, LTE64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * GreaterEqNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, GTE64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 void AssignStmtNode::to3AC(Procedure * proc){
