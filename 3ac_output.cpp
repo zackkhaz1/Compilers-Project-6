@@ -11,12 +11,21 @@ IRProgram * ProgramNode::to3AC(TypeAnalysis * ta){
 }
 
 void FnDeclNode::to3AC(IRProgram * prog){
-	TODO(Implement me)
+	Procedure * p = prog->makeProc(myID->getName());
+
+		for(auto f : *myFormals){
+			f->to3AC(proc);
+		}
+
+		for(auto b : *myBody){
+			b->to3AC(proc);
+		}
+
 }
 
 void FnDeclNode::to3AC(Procedure * proc){
 	//This never needs to be implemented,
-	// the function only exists because of 
+	// the function only exists because of
 	// inheritance needs (A function declaration
 	// never occurs within another function)
 	throw new InternalError("FnDecl at a local scope");
@@ -24,14 +33,19 @@ void FnDeclNode::to3AC(Procedure * proc){
 
 void FormalDeclNode::to3AC(IRProgram * prog){
 	//This never needs to be implemented,
-	// the function only exists because of 
-	// inheritance needs (A formal never 
+	// the function only exists because of
+	// inheritance needs (A formal never
 	// occurs at global scope)
 	throw new InternalError("Formal at a global scope");
 }
 
 void FormalDeclNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	SemSymbol* s = ID()->getSymbol();
+	if(s == nullptr)
+	{
+		throw new InternalError("Invalid symbol");
+	}
+	proc->gatherFormal(s);
 }
 
 Opd * IntLitNode::flatten(Procedure * proc){
@@ -56,15 +70,25 @@ Opd * HavocNode::flatten(Procedure * proc){
 }
 
 Opd * TrueNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* tru = new LitOpd("1",1);
+	return tru;
 }
 
 Opd * FalseNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* fals = new LitOpd("0",1);
+	return fals;
 }
 
 Opd * AssignExpNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* right = mySrc->flatten(proc);
+	Opd* left = myDst->flatten(proc);
+	if(!left){
+		throw InternalError("Invalid destination");
+	}
+	AssignQuad* q = new AssignQuad(left, right);
+	q->setComment("AssignExp");
+	proc->addQuad(q);
+	return(left);
 }
 
 Opd * LValNode::flatten(Procedure * proc){
@@ -80,23 +104,46 @@ Opd * ByteToIntNode::flatten(Procedure * proc){
 }
 
 Opd * NegNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, NEG64, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * NotNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* op1 = myExp->flatten(proc);
+	Opd* op2 = proc->makeTmp(QUADWORD);
+	Quad* q = new UnaryOpQuad(op1, NOT8, op2);
+	proc->addQuad(q);
+	return op1;
 }
 
 Opd * PlusNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* left = myExp1->flatten(proc);
+	Opd* right =  myExp2->flatten(proc);
+	Opd* dest = proc->makeTmp(QUADWORD);
+	Quad* q = new BinOpQuad(dest, ADD64, left, right);
+	proc->addQuad(q);
+	return dest;
 }
 
 Opd * MinusNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* left = myExp1->flatten(proc);
+	Opd* right =  myExp2->flatten(proc);
+	Opd* dest = proc->makeTmp(QUADWORD);
+	Quad* q = new BinOpQuad(dest, NEQ64, left, right);
+	proc->addQuad(q);
+	return dest;
 }
 
 Opd * TimesNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* left = myExp1->flatten(proc);
+	Opd* right =  myExp2->flatten(proc);
+	Opd* dest = proc->makeTmp(QUADWORD);
+	Quad* q = new BinOpQuad(dest, MULT64, left, right);
+	proc->addQuad(q);
+	return dest;
 }
 
 Opd * DivideNode::flatten(Procedure * proc){
@@ -188,7 +235,7 @@ void VarDeclNode::to3AC(IRProgram * prog){
 	if (sym == nullptr){
 		throw new InternalError("null sym");
 	}
-	
+
 	prog->gatherGlobal(sym);
 }
 
@@ -197,7 +244,7 @@ Opd * IndexNode::flatten(Procedure * proc){
 }
 
 //We only get to this node if we are in a stmt
-// context (DeclNodes protect descent) 
+// context (DeclNodes protect descent)
 Opd * IDNode::flatten(Procedure * proc){
 	TODO(Implement me)
 }
