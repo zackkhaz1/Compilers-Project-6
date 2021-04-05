@@ -105,7 +105,7 @@ Opd * ByteToIntNode::flatten(Procedure * proc){
 
 Opd * NegNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, NEG64, op2);
 	proc->addQuad(q);
 	return op1;
@@ -113,7 +113,7 @@ Opd * NegNode::flatten(Procedure * proc){
 
 Opd * NotNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, NOT8, op2);
 	proc->addQuad(q);
 	return op1;
@@ -122,7 +122,7 @@ Opd * NotNode::flatten(Procedure * proc){
 Opd * PlusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(QUADWORD);
+	Opd* dest = proc->makeTmp(8);
 	Quad* q = new BinOpQuad(dest, ADD64, left, right);
 	proc->addQuad(q);
 	return dest;
@@ -131,7 +131,7 @@ Opd * PlusNode::flatten(Procedure * proc){
 Opd * MinusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(QUADWORD);
+	Opd* dest = proc->makeTmp(8);
 	Quad* q = new BinOpQuad(dest, NEQ64, left, right);
 	proc->addQuad(q);
 	return dest;
@@ -140,7 +140,7 @@ Opd * MinusNode::flatten(Procedure * proc){
 Opd * TimesNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(QUADWORD);
+	Opd* dest = proc->makeTmp(8);
 	Quad* q = new BinOpQuad(dest, MULT64, left, right);
 	proc->addQuad(q);
 	return dest;
@@ -149,7 +149,7 @@ Opd * TimesNode::flatten(Procedure * proc){
 Opd * DivideNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(QUADWORD);
+	Opd* dest = proc->makeTmp(8);
 	Quad* q = new BinOpQuad(dest, DIV64, left, right);
 	proc->addQuad(q);
 	return dest;
@@ -157,7 +157,7 @@ Opd * DivideNode::flatten(Procedure * proc){
 
 Opd * AndNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, AND8, op2);
 	proc->addQuad(q);
 	return op1;
@@ -165,7 +165,7 @@ Opd * AndNode::flatten(Procedure * proc){
 
 Opd * OrNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, OR8, op2);
 	proc->addQuad(q);
 	return op1;
@@ -173,7 +173,7 @@ Opd * OrNode::flatten(Procedure * proc){
 
 Opd * EqualsNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, EQ64, op2);
 	proc->addQuad(q);
 	return op1;
@@ -181,7 +181,7 @@ Opd * EqualsNode::flatten(Procedure * proc){
 
 Opd * NotEqualsNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, NEQ8, op2);
 	proc->addQuad(q);
 	return op1;
@@ -189,7 +189,7 @@ Opd * NotEqualsNode::flatten(Procedure * proc){
 
 Opd * LessNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, LT64, op2);
 	proc->addQuad(q);
 	return op1;
@@ -197,7 +197,7 @@ Opd * LessNode::flatten(Procedure * proc){
 
 Opd * GreaterNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, GT64, op2);
 	proc->addQuad(q);
 	return op1;
@@ -205,7 +205,7 @@ Opd * GreaterNode::flatten(Procedure * proc){
 
 Opd * LessEqNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, LTE64, op2);
 	proc->addQuad(q);
 	return op1;
@@ -213,7 +213,7 @@ Opd * LessEqNode::flatten(Procedure * proc){
 
 Opd * GreaterEqNode::flatten(Procedure * proc){
 	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(QUADWORD);
+	Opd* op2 = proc->makeTmp(8);
 	Quad* q = new UnaryOpQuad(op1, GTE64, op2);
 	proc->addQuad(q);
 	return op1;
