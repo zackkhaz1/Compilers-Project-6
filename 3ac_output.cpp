@@ -14,11 +14,11 @@ void FnDeclNode::to3AC(IRProgram * prog){
 	Procedure * p = prog->makeProc(myID->getName());
 
 		for(auto f : *myFormals){
-			f->to3AC(proc);
+			f->to3AC(p);
 		}
 
 		for(auto b : *myBody){
-			b->to3AC(proc);
+			b->to3AC(p);
 		}
 
 }
@@ -96,7 +96,28 @@ Opd * LValNode::flatten(Procedure * proc){
 }
 
 Opd * CallExpNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	std::list<Opd*> opdList;
+	for(auto arg : *myArgs)
+	{
+		opdList.push_back(arg->flatten(proc));
+	}
+
+	SemSymbol* fnIdentifier = myID->getSymbol();
+	CallQuad* cQuad = new CallQuad(fnIdentifier);
+	proc->addQuad(cQuad);
+
+	Opd* ret = nullptr;
+	DataType* returnType = fnIdentifier->getDataType();
+	if(!returnType->isVoid())
+	{
+		ret = proc->makeTmp(8);
+		GetRetQuad* retQ = new GetRetQuad(ret);
+		proc->addQuad(retQ);
+		return(ret);
+
+	}
+
+	return(ret);
 }
 
 Opd * ByteToIntNode::flatten(Procedure * proc){
@@ -156,87 +177,107 @@ Opd * DivideNode::flatten(Procedure * proc){
 }
 
 Opd * AndNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, AND8, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, AND8, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * OrNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, OR8, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, OR8, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * EqualsNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, EQ64, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, EQ64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * NotEqualsNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, NEQ8, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, LTE64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * LessNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, LT64, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, LT64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * GreaterNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, GT64, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, GT64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * LessEqNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, LTE64, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, LTE64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 Opd * GreaterEqNode::flatten(Procedure * proc){
-	Opd* op1 = myExp->flatten(proc);
-	Opd* op2 = proc->makeTmp(8);
-	Quad* q = new UnaryOpQuad(op1, GTE64, op2);
+	Opd* op1 = myExp1->flatten(proc);
+	Opd* op2 = myExp2->flatten(proc);
+	Opd* op3 = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(op3, GTE64, op1, op2);
 	proc->addQuad(q);
 	return op1;
 }
 
 void AssignStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	myExp->flatten(proc);
 }
 
 void PostIncStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	Opd* inc = myLVal->flatten(proc);
+	LitOpd* literal = new LitOpd("1",8);
+	BinOpQuad* binQuad = new BinOpQuad(inc, ADD8, inc, literal);
+	proc->addQuad(binQuad);
 }
 
 void PostDecStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	Opd* inc = myLVal->flatten(proc);
+	LitOpd* literal = new LitOpd("1",8);
+	BinOpQuad* binQuad = new BinOpQuad(inc, SUB8, inc, literal);
+	proc->addQuad(binQuad);
 }
 
 void ReadStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	////Not sure if this is right
+	Opd* dest = myDst->flatten(proc);
+	//ReadQuad* rQuad = new ReadQuad(dest, READ);
+	//proc->addQuad(rQuad);
 }
 
 void WriteStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	////Not sure if this is right
+	Opd* src = mySrc->flatten(proc);
+	//WriteQuad* wQuad = new WriteQuad(src, WRITE);
+	//proc->addQuad(wQuad);
 }
 
 void IfStmtNode::to3AC(Procedure * proc){
