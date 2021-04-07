@@ -112,10 +112,9 @@ std::string BinOpQuad::oprString(BinOp opr){
 	case LTE8: return "LTE8";  
 	case LTE64: return "LTE64";  
 	case GTE8: return "GTE8";  
-	case GTE64: return "GTE64";  
-		
+	case GTE64: return "GTE64";  	
 	} 
-
+	return " ";
 }
 
 std::string BinOpQuad::repr(){

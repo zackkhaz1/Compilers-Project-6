@@ -91,13 +91,23 @@ Opd * AssignExpNode::flatten(Procedure * proc){
 	return(left);
 }
 
-Opd * LValNode::flatten(Procedure * proc){}
+Opd * LValNode::flatten(Procedure * proc){
+	TODO();
+}
 
 Opd * CallExpNode::flatten(Procedure * proc){
 	std::list<Opd*> opdList;
 	for(auto arg : *myArgs)
 	{
 		opdList.push_back(arg->flatten(proc));
+	}
+
+	size_t iter = 1;
+	for(auto opd : opdList)
+	{
+		Quad* newArg = new SetArgQuad(iter, opd);
+		proc->addQuad(newArg);
+		iter++;
 	}
 
 	SemSymbol* fnIdentifier = myID->getSymbol();
@@ -111,16 +121,14 @@ Opd * CallExpNode::flatten(Procedure * proc){
 		ret = proc->makeTmp(8);
 		GetRetQuad* retQ = new GetRetQuad(ret);
 		proc->addQuad(retQ);
-		return(ret);
-
+		return ret;
 	}
-
-	return(ret);
+	return ret;
 }
 
 Opd * ByteToIntNode::flatten(Procedure * proc){
 	Opd* childOpd = myChild->flatten(proc);
-	Opd* tempOpd = proc->makeTmp(childOpd->getWidth());
+	Opd* tempOpd = proc->makeTmp(8);
 	Quad* q = new AssignQuad(childOpd, tempOpd); 
 	proc->addQuad(q);
 	return childOpd;
@@ -283,15 +291,64 @@ void WriteStmtNode::to3AC(Procedure * proc){
 }
 
 void IfStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	Opd* condOpd = myCond->flatten(proc);
+	Label* exitIf = proc->makeLabel();
+	Quad* jumpIf = new JmpIfQuad(condOpd, exitIf);
+	proc->addQuad(jumpIf);
+	for (auto stmt: *myBody){
+		stmt->to3AC(proc);
+	}
+	Quad* exit = new NopQuad();
+	exit->addLabel(exitIf);
+	proc->addQuad(exit);
 }
 
 void IfElseStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	Opd* condOpd = myCond->flatten(proc);
+	Label* elseLbl = proc->makeLabel();
+	Quad* jumpElse = new JmpIfQuad(condOpd, elseLbl);
+	proc->addQuad(jumpElse);
+	
+	for (auto stmt: *myBodyTrue){
+		stmt->to3AC(proc);
+	}
+	
+	Label* exitIfElse = proc->makeLabel();
+	Quad* skipElse = new JmpQuad(exitIfElse);
+	proc->addQuad(skipElse);
+
+	Quad* elseNop = new NopQuad();
+	elseNop->addLabel(elseLbl);
+	proc->addQuad(elseNop);
+
+	for (auto stmt : *myBodyFalse){
+		stmt->to3AC(proc);
+	}
+
+	Quad* exit = new NopQuad();
+	exit->addLabel(exitIfElse);
+	proc->addQuad(exit);
 }
 
 void WhileStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	Label* loopStart = proc->makeLabel();
+	Quad* start = new NopQuad();
+	start->addLabel(loopStart);
+	proc->addQuad(start);
+
+	Opd* condOpd = myCond->flatten(proc);
+	Label* exitWhile = proc->makeLabel();
+	Quad* falseCondJump = new JmpIfQuad(condOpd, exitWhile);
+
+	for (auto stmt : *myBody){
+		stmt->to3AC(proc);
+	}
+
+	Quad* loopBack = new JmpQuad(loopStart);
+	proc->addQuad(loopBack);
+	Quad* exit = new NopQuad();
+	exit->addLabel(exitWhile);
+	proc->addQuad(exit);
 }
 
 void CallStmtNode::to3AC(Procedure * proc){
@@ -326,7 +383,7 @@ void VarDeclNode::to3AC(IRProgram * prog){
 }
 
 Opd * IndexNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	TODO();
 }
 
 //We only get to this node if we are in a stmt
