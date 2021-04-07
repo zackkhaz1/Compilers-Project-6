@@ -119,7 +119,11 @@ Opd * CallExpNode::flatten(Procedure * proc){
 }
 
 Opd * ByteToIntNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* childOpd = myChild->flatten(proc);
+	Opd* tempOpd = proc->makeTmp(childOpd->getWidth());
+	Quad* q = new AssignQuad(childOpd, tempOpd); 
+	proc->addQuad(q);
+	return childOpd;
 }
 
 Opd * NegNode::flatten(Procedure * proc){
@@ -291,7 +295,7 @@ void WhileStmtNode::to3AC(Procedure * proc){
 }
 
 void CallStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	myCallExp->flatten(proc);
 }
 
 void ReturnStmtNode::to3AC(Procedure * proc){
