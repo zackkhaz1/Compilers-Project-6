@@ -91,9 +91,7 @@ Opd * AssignExpNode::flatten(Procedure * proc){
 	return(left);
 }
 
-Opd * LValNode::flatten(Procedure * proc){
-	TODO(Implement me)
-}
+Opd * LValNode::flatten(Procedure * proc){}
 
 Opd * CallExpNode::flatten(Procedure * proc){
 	std::list<Opd*> opdList;
@@ -254,30 +252,30 @@ void AssignStmtNode::to3AC(Procedure * proc){
 
 void PostIncStmtNode::to3AC(Procedure * proc){
 	Opd* inc = myLVal->flatten(proc);
-	LitOpd* literal = new LitOpd("1",8);
+	LitOpd* literal = new LitOpd("1",1);
 	BinOpQuad* binQuad = new BinOpQuad(inc, ADD8, inc, literal);
 	proc->addQuad(binQuad);
 }
 
 void PostDecStmtNode::to3AC(Procedure * proc){
 	Opd* inc = myLVal->flatten(proc);
-	LitOpd* literal = new LitOpd("1",8);
+	LitOpd* literal = new LitOpd("1",1);
 	BinOpQuad* binQuad = new BinOpQuad(inc, SUB8, inc, literal);
 	proc->addQuad(binQuad);
 }
 
 void ReadStmtNode::to3AC(Procedure * proc){
-	////Not sure if this is right
 	Opd* dest = myDst->flatten(proc);
-	//ReadQuad* rQuad = new ReadQuad(dest, READ);
-	//proc->addQuad(rQuad);
+	auto type = proc->getProg()->nodeType(this);
+	ReadQuad* rQuad = new ReadQuad(dest, type);
+	proc->addQuad(rQuad);
 }
 
 void WriteStmtNode::to3AC(Procedure * proc){
-	////Not sure if this is right
 	Opd* src = mySrc->flatten(proc);
-	//WriteQuad* wQuad = new WriteQuad(src, WRITE);
-	//proc->addQuad(wQuad);
+	auto type = proc->getProg()->nodeType(this);
+	WriteQuad* wQuad = new WriteQuad(src, type);
+	proc->addQuad(wQuad);
 }
 
 void IfStmtNode::to3AC(Procedure * proc){
@@ -297,7 +295,13 @@ void CallStmtNode::to3AC(Procedure * proc){
 }
 
 void ReturnStmtNode::to3AC(Procedure * proc){
-	TODO(Implement me)
+	if(myExp != NULL){
+		Opd* childReturn = myExp->flatten(proc);
+		Quad* setRet = new SetRetQuad(childReturn);
+		proc->addQuad(setRet);
+	}
+	Quad* jump = new JmpQuad(proc->getLeaveLabel());
+	proc->addQuad(jump);
 }
 
 void VarDeclNode::to3AC(Procedure * proc){
@@ -324,7 +328,11 @@ Opd * IndexNode::flatten(Procedure * proc){
 //We only get to this node if we are in a stmt
 // context (DeclNodes protect descent)
 Opd * IDNode::flatten(Procedure * proc){
-	TODO(Implement me)
+	Opd* sym = proc->getSymOpd(mySymbol);
+	if(sym == NULL){
+		throw new InternalError("null ID sym");
+	}
+	return sym;
 }
 
 }
