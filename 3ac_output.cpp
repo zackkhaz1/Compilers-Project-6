@@ -13,13 +13,22 @@ IRProgram * ProgramNode::to3AC(TypeAnalysis * ta){
 void FnDeclNode::to3AC(IRProgram * prog){
 	Procedure * p = prog->makeProc(myID->getName());
 
-		for(auto f : *myFormals){
-			f->to3AC(p);
-		}
+	for(auto f : *myFormals){
+		f->to3AC(p);
+	}
 
-		for(auto b : *myBody){
-			b->to3AC(p);
-		}
+	size_t idx = 1;
+	std::list<SymOpd *> formals = p->getFormals();
+	for(auto opd : formals)
+	{
+		Quad* arg = new GetArgQuad(idx, opd);
+		p->addQuad(arg);
+		idx++;
+	}
+
+	for(auto b : *myBody){
+		b->to3AC(p);
+	}
 
 }
 
@@ -102,12 +111,12 @@ Opd * CallExpNode::flatten(Procedure * proc){
 		opdList.push_back(arg->flatten(proc));
 	}
 
-	size_t iter = 1;
+	size_t idx = 1;
 	for(auto opd : opdList)
 	{
-		Quad* newArg = new SetArgQuad(iter, opd);
-		proc->addQuad(newArg);
-		iter++;
+		Quad* arg = new SetArgQuad(idx, opd);
+		proc->addQuad(arg);
+		idx++;
 	}
 
 	SemSymbol* fnIdentifier = myID->getSymbol();
@@ -153,37 +162,69 @@ Opd * NotNode::flatten(Procedure * proc){
 Opd * PlusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(dest, ADD64, left, right);
-	proc->addQuad(q);
-	return dest;
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, ADD64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, ADD8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * MinusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(dest, NEQ64, left, right);
-	proc->addQuad(q);
-	return dest;
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, SUB64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, SUB8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * TimesNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(dest, MULT64, left, right);
-	proc->addQuad(q);
-	return dest;
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, MULT64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, MULT8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * DivideNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	Opd* dest = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(dest, DIV64, left, right);
-	proc->addQuad(q);
-	return dest;
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, DIV64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, DIV8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * AndNode::flatten(Procedure * proc){
@@ -205,57 +246,105 @@ Opd * OrNode::flatten(Procedure * proc){
 }
 
 Opd * EqualsNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, EQ64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, EQ64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, EQ8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * NotEqualsNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, LTE64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, NEQ64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, NEQ8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * LessNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, LT64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, LT64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, LT8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * GreaterNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, GT64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, GT64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, GT8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * LessEqNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, LTE64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, LTE64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, LTE8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 Opd * GreaterEqNode::flatten(Procedure * proc){
-	Opd* op1 = myExp1->flatten(proc);
-	Opd* op2 = myExp2->flatten(proc);
-	Opd* op3 = proc->makeTmp(8);
-	Quad* q = new BinOpQuad(op3, GTE64, op1, op2);
-	proc->addQuad(q);
-	return op1;
+	Opd* left = myExp1->flatten(proc);
+	Opd* right = myExp2->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if(type->isInt()){
+		Opd* dest = proc->makeTmp(8);
+		Quad* q = new BinOpQuad(dest, GTE64, left, right);
+		proc->addQuad(q);
+		return dest;
+	} else {
+		Opd* dest = proc->makeTmp(1);
+		Quad* q = new BinOpQuad(dest, GTE8, left, right);
+		proc->addQuad(q);
+		return dest;
+	}
 }
 
 void AssignStmtNode::to3AC(Procedure * proc){
