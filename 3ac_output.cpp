@@ -353,15 +353,15 @@ void AssignStmtNode::to3AC(Procedure * proc){
 
 void PostIncStmtNode::to3AC(Procedure * proc){
 	Opd* inc = myLVal->flatten(proc);
-	LitOpd* literal = new LitOpd("1",1);
-	BinOpQuad* binQuad = new BinOpQuad(inc, ADD8, inc, literal);
+	LitOpd* literal = new LitOpd("1",8);
+	BinOpQuad* binQuad = new BinOpQuad(inc, ADD64, inc, literal);
 	proc->addQuad(binQuad);
 }
 
 void PostDecStmtNode::to3AC(Procedure * proc){
 	Opd* inc = myLVal->flatten(proc);
-	LitOpd* literal = new LitOpd("1",1);
-	BinOpQuad* binQuad = new BinOpQuad(inc, SUB8, inc, literal);
+	LitOpd* literal = new LitOpd("1",8);
+	BinOpQuad* binQuad = new BinOpQuad(inc, SUB64, inc, literal);
 	proc->addQuad(binQuad);
 }
 
@@ -472,7 +472,18 @@ void VarDeclNode::to3AC(IRProgram * prog){
 }
 
 Opd * IndexNode::flatten(Procedure * proc){
-	TODO();
+	Opd* idOpd = myBase->flatten(proc);
+	Opd* idxOpd = myOffset->flatten(proc);
+	auto width = Opd::width(myBase->getSymbol()->getDataType());
+	Opd* widthOpd = new LitOpd("8", width);
+	
+	Opd* tmp = proc->makeTmp(8);
+	Quad* q = new BinOpQuad(tmp, MULT64, idxOpd, widthOpd);
+	proc->addQuad(q);
+	auto tmpAddr = proc->makeAddrOpd(8);
+	Quad* idxQuad = new IndexQuad(tmpAddr, idOpd, tmp);
+	proc->addQuad(idxQuad);
+	return tmpAddr;
 }
 
 //We only get to this node if we are in a stmt
