@@ -1,4 +1,5 @@
 #include "ast.hpp"
+#include <iostream>
 
 namespace crona{
 
@@ -129,7 +130,6 @@ Opd * CallExpNode::flatten(Procedure * proc){
 	{
 		ret = proc->makeTmp(8);
 		GetRetQuad* retQ = new GetRetQuad(ret);
-		proc->addQuad(retQ);
 		return ret;
 	}
 	return ret;
@@ -162,8 +162,9 @@ Opd * NotNode::flatten(Procedure * proc){
 Opd * PlusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, ADD64, left, right);
 		proc->addQuad(q);
@@ -179,8 +180,9 @@ Opd * PlusNode::flatten(Procedure * proc){
 Opd * MinusNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, SUB64, left, right);
 		proc->addQuad(q);
@@ -196,8 +198,9 @@ Opd * MinusNode::flatten(Procedure * proc){
 Opd * TimesNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, MULT64, left, right);
 		proc->addQuad(q);
@@ -213,8 +216,9 @@ Opd * TimesNode::flatten(Procedure * proc){
 Opd * DivideNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right =  myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, DIV64, left, right);
 		proc->addQuad(q);
@@ -248,8 +252,9 @@ Opd * OrNode::flatten(Procedure * proc){
 Opd * EqualsNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, EQ64, left, right);
 		proc->addQuad(q);
@@ -265,8 +270,9 @@ Opd * EqualsNode::flatten(Procedure * proc){
 Opd * NotEqualsNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, NEQ64, left, right);
 		proc->addQuad(q);
@@ -282,8 +288,9 @@ Opd * NotEqualsNode::flatten(Procedure * proc){
 Opd * LessNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, LT64, left, right);
 		proc->addQuad(q);
@@ -299,8 +306,9 @@ Opd * LessNode::flatten(Procedure * proc){
 Opd * GreaterNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, GT64, left, right);
 		proc->addQuad(q);
@@ -316,8 +324,9 @@ Opd * GreaterNode::flatten(Procedure * proc){
 Opd * LessEqNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, LTE64, left, right);
 		proc->addQuad(q);
@@ -333,8 +342,9 @@ Opd * LessEqNode::flatten(Procedure * proc){
 Opd * GreaterEqNode::flatten(Procedure * proc){
 	Opd* left = myExp1->flatten(proc);
 	Opd* right = myExp2->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
-	if(type->isInt()){
+	auto leftSize = left->getWidth();
+	auto rightSize = right->getWidth();
+	if(leftSize > 1 && rightSize > 1){
 		Opd* dest = proc->makeTmp(8);
 		Quad* q = new BinOpQuad(dest, GTE64, left, right);
 		proc->addQuad(q);
