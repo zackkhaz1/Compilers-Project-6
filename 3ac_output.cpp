@@ -96,7 +96,6 @@ Opd * AssignExpNode::flatten(Procedure * proc){
 		throw InternalError("Invalid destination");
 	}
 	AssignQuad* q = new AssignQuad(left, right);
-	q->setComment("AssignExp");
 	proc->addQuad(q);
 	return(left);
 }
@@ -138,9 +137,9 @@ Opd * CallExpNode::flatten(Procedure * proc){
 Opd * ByteToIntNode::flatten(Procedure * proc){
 	Opd* childOpd = myChild->flatten(proc);
 	Opd* tempOpd = proc->makeTmp(8);
-	Quad* q = new AssignQuad(childOpd, tempOpd); 
+	Quad* q = new AssignQuad(tempOpd, childOpd); 
 	proc->addQuad(q);
-	return childOpd;
+	return tempOpd;
 }
 
 Opd * NegNode::flatten(Procedure * proc){
@@ -377,14 +376,14 @@ void PostDecStmtNode::to3AC(Procedure * proc){
 
 void ReadStmtNode::to3AC(Procedure * proc){
 	Opd* dest = myDst->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
+	auto type = proc->getProg()->nodeType(myDst);
 	ReadQuad* rQuad = new ReadQuad(dest, type);
 	proc->addQuad(rQuad);
 }
 
 void WriteStmtNode::to3AC(Procedure * proc){
 	Opd* src = mySrc->flatten(proc);
-	auto type = proc->getProg()->nodeType(this);
+	auto type = proc->getProg()->nodeType(mySrc);
 	WriteQuad* wQuad = new WriteQuad(src, type);
 	proc->addQuad(wQuad);
 }
@@ -482,12 +481,18 @@ void VarDeclNode::to3AC(IRProgram * prog){
 }
 
 Opd * IndexNode::flatten(Procedure * proc){
-	Opd* idOpd = myBase->flatten(proc);
 	Opd* idxOpd = myOffset->flatten(proc);
+	Opd* idOpd = myBase->flatten(proc);
+	auto type = proc->getProg()->nodeType(this);
+	if (type->isByte() || type->isBool()){
+		auto tmpAddr = proc->makeAddrOpd(1);
+		Quad* idxQuad = new IndexQuad(tmpAddr, idOpd, idxOpd);
+		proc->addQuad(idxQuad);
+		return tmpAddr;
+	}
 	auto width = Opd::width(myBase->getSymbol()->getDataType());
-	Opd* widthOpd = new LitOpd("8", width);
-	
 	Opd* tmp = proc->makeTmp(8);
+	Opd* widthOpd = new LitOpd("8", width);
 	Quad* q = new BinOpQuad(tmp, MULT64, idxOpd, widthOpd);
 	proc->addQuad(q);
 	auto tmpAddr = proc->makeAddrOpd(8);
